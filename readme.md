@@ -62,11 +62,11 @@ make go-compile # compile & launch
 
 ## Project structure
 
-**cmd/** - The main directory with the main.go file, functions are called and run here \
-**config/** - Directory with the configuration file, project settings are stored here \
-**internal/** - Directory with code for databases, working with loggers and configurations \
-**models/** - Directory with models for the database \
-**Makefile** - project launch 
+* **cmd/** - The main directory with the main.go file, functions are called and run here \
+* **config/** - Directory with the configuration file, project settings are stored here \
+* **internal/** - Directory with code for databases, working with loggers and configurations \
+* **models/** - Directory with models for the database \
+* **Makefile** - project launch 
 
 ## License
 Before using the project, it is recommended to read the license
