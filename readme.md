@@ -44,6 +44,7 @@ Instructions on how to run a project locally
 * **UUID** - github.com/google/uuid
 * **GORM/SQLITE DRIVER** - gorm.io/driver/sqlite
 * **GORM** - gorm.io/gorm
+* **GIN** - github.com/gin-gonic/gin
 
 
 ```
@@ -51,6 +52,7 @@ go get github.com/ilyakaznacheev/cleanenv
 go get github.com/google/uuid
 go get gorm.io/driver/sqlite
 go get gorm.io/gorm
+go get github.com/gin-gonic/gin
 ```
 
 ### Installation and Launch
