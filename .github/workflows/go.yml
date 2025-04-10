@@ -23,6 +23,9 @@ jobs:
     - name: Intall Dependencies
       run: |
         go get github.com/ilyakaznacheev/cleanenv
+        go get github.com/google/uuid
+        go get gorm.io/driver/sqlite
+        go get gorm.io/gorm
 
     - name: Build
       run: go build -v ./cmd/todo-flow/main.go

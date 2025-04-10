@@ -40,7 +40,18 @@ Instructions on how to run a project locally
 
 ### Dependencies
 
-* **CleanEnv** - github.com/ilyakaznacheev/cleanenv
+* **CLEAN ENV** - github.com/ilyakaznacheev/cleanenv
+* **UUID** - github.com/google/uuid
+* **GORM/SQLITE DRIVER** - gorm.io/driver/sqlite
+* **GORM** - gorm.io/gorm
+
+
+```
+go get github.com/ilyakaznacheev/cleanenv
+go get github.com/google/uuid
+go get gorm.io/driver/sqlite
+go get gorm.io/gorm
+```
 
 ### Installation and Launch
 
