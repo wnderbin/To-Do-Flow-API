@@ -1,6 +1,6 @@
 env: "local" #dev, prod
 
-sqlite_path: "./internal/storage/sqlite.db"
+sqlite_path: "./storage/sqlite.db"
 
 postgres:
   host: "localhost"
