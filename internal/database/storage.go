@@ -28,7 +28,6 @@ func SQLiteDBInit(conf *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to open sqlite_db: %w", err)
 	}
 
-	db.AutoMigrate(&models.User{}, &models.ToDoList{})
 	return db, nil
 }
 

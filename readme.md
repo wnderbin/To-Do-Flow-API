@@ -45,6 +45,8 @@ Instructions on how to run a project locally
 * **GORM/SQLITE DRIVER** - gorm.io/driver/sqlite
 * **GORM** - gorm.io/gorm
 * **GIN** - github.com/gin-gonic/gin
+* **MIGRATE/V4** - github.com/golang-migrate/migrate/v4
+* **MIGRATE/V4/SQLITE3** - github.com/golang-migrate/migrate/v4/database/sqlite3
 
 
 ```
@@ -53,6 +55,8 @@ go get github.com/google/uuid
 go get gorm.io/driver/sqlite
 go get gorm.io/gorm
 go get github.com/gin-gonic/gin
+go get github.com/golang-migrate/migrate/v4
+go get github.com/golang-migrate/migrate/v4/database/sqlite3
 ```
 
 ### Installation and Launch

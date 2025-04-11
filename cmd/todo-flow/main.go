@@ -8,27 +8,42 @@ import (
 	"todoflow-api/internal/config"
 	"todoflow-api/internal/database"
 	"todoflow-api/internal/logger"
+	"todoflow-api/internal/migrator"
 
 	"github.com/gin-gonic/gin"
 )
 
+func api_init() *config.Config {
+	conf := config.MustLoad()
+
+	log := logger.Init(conf.Env)
+	log = log.With(slog.String("env", conf.Env))
+
+	log.Info("Initializing server", slog.String("Address", conf.HttpServer.Address))
+	log.Debug("Logger debug mode enabled")
+
+	db, err := database.SQLiteDBInit(conf)
+	if err != nil {
+		log.Error("filed to connect to database:", "error", err)
+		os.Exit(1)
+	}
+	log.Info("connected to database")
+
+	sqldb, _ := db.DB()
+
+	if err := migrator.ApplySQLiteMigrations(sqldb); err != nil {
+		log.Error("migrations failed", "error", err)
+		os.Exit(1)
+	}
+
+	return conf
+}
+
 func main() {
 	if len(os.Args) == 2 && os.Args[1] == "1" {
-		conf := config.MustLoad()
-
-		log := logger.Init(conf.Env)
-		log = log.With(slog.String("env", conf.Env))
-
-		log.Info("Initializing server", slog.String("Address", conf.HttpServer.Address))
-		log.Debug("Logger debug mode enabled")
+		api_init()
 	} else {
-		conf := config.MustLoad()
-
-		log := logger.Init(conf.Env)
-		log = log.With(slog.String("env", conf.Env))
-
-		log.Info("Initializing server", slog.String("Address", conf.HttpServer.Address))
-		log.Debug("Logger debug mode enabled")
+		conf := api_init()
 
 		router := gin.Default()
 

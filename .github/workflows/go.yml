@@ -27,6 +27,8 @@ jobs:
         go get gorm.io/driver/sqlite
         go get gorm.io/gorm
         go get github.com/gin-gonic/gin
+        go get github.com/golang-migrate/migrate/v4
+        go get github.com/golang-migrate/migrate/v4/database/sqlite3
 
     - name: Build
       run: go build -v ./cmd/todo-flow/main.go
