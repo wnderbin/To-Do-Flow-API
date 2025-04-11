@@ -26,12 +26,16 @@
 
 Manage your todo lists quickly and efficiently right on the server 
 
+![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
+
 ### Built with:
 
-[![My Skills](https://skillicons.dev/icons?i=go,postgres,sqlite,html,css)](https://skillicons.dev)
+![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 
 * **Go** - Backend
-* **Html, Css** - Frontend
 * **Postgres, SQLite** - DBMS, data storage
 
 ## Getting Started
