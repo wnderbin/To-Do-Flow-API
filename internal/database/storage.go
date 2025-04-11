@@ -47,32 +47,45 @@ func SQLiteDBClose(db *gorm.DB) error {
 
 // Crud
 
-func CreateUser(name string, username string, password string, email string) bool {
+func CreateUser(name string, username string, password string, email string) (models.User, bool) {
 	var users []models.User
+	var user models.User
+
 	db, err := SQLiteDBInit(conf)
 	if err != nil {
 		log.Error(err.Error())
-		return false
+		return user, false
 	}
 
 	db.Where("username = ?", username).Find(&users)
 	if len(users) == 0 {
 
+		user_uuid := uuid.NewString()
+
 		db.Create(&models.User{
+			Id:         user_uuid,
 			Name:       name,
 			Username:   username,
 			Password:   password,
 			Email:      email,
 			Created_at: time.Now(),
+			Updated_at: time.Now(),
 		})
+
+		user, status := GetUser(user_uuid)
+		if !status {
+			log.Error(err.Error())
+			return user, false
+		}
+
 		if err = SQLiteDBClose(db); err != nil {
 			log.Error(err.Error())
-			return false
+			return user, false
 		}
-		return true
+		return user, true
 	} else {
 		SQLiteDBClose(db)
-		return false
+		return user, false
 	}
 }
 

@@ -1,17 +1,17 @@
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+    id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     email TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
 );
 
 CREATE TABLE todo (
-    id UUID PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id TEXT PRIMARY KEY NOT NULL,
+    created_at TIMESTAMP NOT NULL
+    updated_at TIMESTAMP NOT NULL,
     todonote TEXT NOT NULL,
-    user_id UUID REFERENCES users(id)
+    user_id TEXT REFERENCES users(id)
 );

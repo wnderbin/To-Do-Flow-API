@@ -47,6 +47,12 @@ func main() {
 
 		router := gin.Default()
 
+		/*
+			    ------------
+				| GET-URLS |
+				------------
+		*/
+
 		router.GET("/main", func(c *gin.Context) {
 			c.String(http.StatusOK, "Welcome to main page")
 		})
@@ -58,11 +64,11 @@ func main() {
 			password := c.Query("password")
 			email := c.Query("email")
 
-			status := database.CreateUser(name, username, password, email)
+			user, status := database.CreateUser(name, username, password, email)
 			if status {
-				c.String(http.StatusOK, "Success")
+				c.JSON(http.StatusCreated, user)
 			} else {
-				c.String(http.StatusInternalServerError, "Internal Server Error")
+				c.String(http.StatusInternalServerError, "Internal Server Error\nMost likely, there is already a user with the specified username, try changing it")
 			}
 		})
 

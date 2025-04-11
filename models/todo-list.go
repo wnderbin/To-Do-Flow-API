@@ -7,7 +7,7 @@ import (
 )
 
 type ToDoList struct {
-	Id uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
+	Id uuid.UUID `gorm:"primaryKey" json:"id"`
 
 	Created_at time.Time `json:"created_at"`
 	Updated_at time.Time `json:"updated_at"`
