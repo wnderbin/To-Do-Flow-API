@@ -71,6 +71,20 @@ func main() {
 				c.String(http.StatusInternalServerError, "Internal Server Error\nMost likely, there is already a user with the specified username, try changing it")
 			}
 		})
+		router.GET("/create_note", func(c *gin.Context) {
+			// /create_note?note=_&user_id=_
+			// _ - your data
+
+			note := c.Query("note")
+			user_id := c.Query("user_id")
+
+			note_obj, status := database.CreateToDo(note, user_id)
+			if status {
+				c.JSON(http.StatusCreated, note_obj)
+			} else {
+				c.String(http.StatusInternalServerError, "Internal Server Error")
+			}
+		})
 
 		router.Run(conf.HttpServer.Address)
 	}

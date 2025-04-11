@@ -89,25 +89,33 @@ func CreateUser(name string, username string, password string, email string) (mo
 	}
 }
 
-func CreateToDo(ToDo_Note string, User_id int) bool {
+func CreateToDo(ToDo_Note string, User_id string) (models.ToDoList, bool) {
+	var note models.ToDoList
 	db, err := SQLiteDBInit(conf)
 	if err != nil {
 		log.Error(err.Error())
-		return false
+		return note, false
 	}
 
 	db.Create(&models.ToDoList{
+		Id:         uuid.NewString(),
 		Created_at: time.Now(),
 		Updated_at: time.Now(),
-		ToDoNote:   ToDo_Note,
+		Todonote:   ToDo_Note,
 		User_id:    User_id,
 	})
 
+	note, status := GetToDoNote(User_id)
+	if !status {
+		log.Error(err.Error())
+		return note, false
+	}
+
 	if err = SQLiteDBClose(db); err != nil {
 		log.Error(err.Error())
-		return false
+		return note, false
 	}
-	return true
+	return note, true
 }
 
 // cRud
@@ -177,7 +185,7 @@ func GetToDoNote(note_uuid_str string) (models.ToDoList, bool) {
 		return note, false
 	}
 
-	err = db.Where("id = ?", ParsedUUID).First(&note).Error
+	err = db.Where("user_id = ?", ParsedUUID).Error
 	SQLiteDBClose(db)
 	if err != nil {
 		log.Error(err.Error())

@@ -8,7 +8,7 @@ CREATE TABLE users (
     updated_at TIMESTAMP NOT NULL
 );
 
-CREATE TABLE todo (
+CREATE TABLE to_do_lists (
     id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
