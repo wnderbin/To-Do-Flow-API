@@ -35,9 +35,6 @@ Manage your todo lists quickly and efficiently right on the server
 ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 
-* **Go** - Backend
-* **Postgres, SQLite** - DBMS, data storage
-
 ## Getting Started
 
 Instructions on how to run a project locally
