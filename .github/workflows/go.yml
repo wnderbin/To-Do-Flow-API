@@ -31,4 +31,4 @@ jobs:
     - name: Build
       run: go build -v ./cmd/todo-flow/main.go
     - name: Makefile tests
-      run: make go-compile
+      run: make go-build-run-workflow

@@ -5,3 +5,6 @@ go-build:
 
 go-build-run:
 	CONFIG_PATH=./config/config.yaml ./main
+
+go-build-run-workflow: go-build
+	CONFIG_PATH=./config/config.yaml ./main 1
