@@ -1,5 +1,5 @@
 CREATE TABLE users (
-    id TEXT PRIMARY KEY NOT NULL,
+    id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
     name TEXT NOT NULL,
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
@@ -9,9 +9,9 @@ CREATE TABLE users (
 );
 
 CREATE TABLE todo (
-    id TEXT PRIMARY KEY NOT NULL,
-    created_at TIMESTAMP NOT NULL
+    id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+    created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     todonote TEXT NOT NULL,
-    user_id TEXT REFERENCES users(id)
+    user_id UUID REFERENCES users(id)
 );
