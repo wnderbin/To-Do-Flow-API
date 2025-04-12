@@ -37,8 +37,7 @@ func SQLiteDBClose(db *gorm.DB) error {
 		return fmt.Errorf("failed to get sqlite_db: %w", err)
 	}
 
-	err = sqlite_db.Close()
-	if err != nil {
+	if err = sqlite_db.Close(); err != nil {
 		return fmt.Errorf("failed to close sqlite_db: %w", err)
 	}
 
@@ -48,7 +47,7 @@ func SQLiteDBClose(db *gorm.DB) error {
 // Crud
 
 func CreateUser(name string, username string, password string, email string) (models.User, bool) {
-	var users []models.User
+	//var users []models.User
 	var user models.User
 
 	db, err := SQLiteDBInit(conf)
@@ -57,36 +56,39 @@ func CreateUser(name string, username string, password string, email string) (mo
 		return user, false
 	}
 
-	db.Where("username = ?", username).Find(&users)
-	if len(users) == 0 {
+	/*err = db.Where("username = ?", username).Find(&users).Error
+	if err != nil {
+		log.Error(err.Error())
+	}
 
-		user_uuid := uuid.NewString()
+	if len(users) == 0 {*/
 
-		db.Create(&models.User{
-			Id:         user_uuid,
-			Name:       name,
-			Username:   username,
-			Password:   password,
-			Email:      email,
-			Created_at: time.Now(),
-			Updated_at: time.Now(),
-		})
+	user_uuid := uuid.NewString()
 
-		user, status := GetUser(user_uuid)
-		if !status {
-			log.Error(err.Error())
-			return user, false
-		}
-
-		if err = SQLiteDBClose(db); err != nil {
-			log.Error(err.Error())
-			return user, false
-		}
-		return user, true
-	} else {
-		SQLiteDBClose(db)
+	err = db.Create(&models.User{
+		Id:         user_uuid,
+		Name:       name,
+		Username:   username,
+		Password:   password,
+		Email:      email,
+		Created_at: time.Now(),
+		Updated_at: time.Now(),
+	}).Error
+	if err != nil {
 		return user, false
 	}
+
+	user, status := GetUser(user_uuid)
+	if !status {
+		log.Error("bad status")
+		return user, false
+	}
+
+	if err = SQLiteDBClose(db); err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+	return user, true
 }
 
 func CreateToDo(ToDo_Note string, User_id string) (models.ToDoList, bool) {
@@ -109,7 +111,7 @@ func CreateToDo(ToDo_Note string, User_id string) (models.ToDoList, bool) {
 
 	note, status := GetToDoNote(note_uuid, User_id)
 	if !status {
-		log.Error(err.Error())
+		log.Error("bad status")
 		return note, false
 	}
 
@@ -142,8 +144,8 @@ func GetUser(uuid_str string) (models.User, bool) {
 		log.Error(err.Error())
 		return user, false
 	}
-	err = SQLiteDBClose(db)
-	if err != nil {
+
+	if err = SQLiteDBClose(db); err != nil {
 		log.Error(err.Error())
 		return user, false
 	}
@@ -172,16 +174,20 @@ func GetToDoNotes(user_uuid string) ([]models.ToDoList, bool) {
 		return notes, false
 	}
 
-	// user, status := GetUser(user_uuid)
-	err = SQLiteDBClose(db)
-	if err != nil {
+	user, status := GetUser(ParsedUUID.String())
+	if !status {
+		log.Error("bad status")
+		return notes, false
+	}
+
+	for i := range notes {
+		notes[i].User = user
+	}
+
+	if err = SQLiteDBClose(db); err != nil {
 		log.Error(err.Error())
 		return notes, false
 	}
-	/*if !status {
-		log.Error(err.Error())
-		return notes, false
-	}*/
 
 	return notes, true
 }
@@ -202,14 +208,18 @@ func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool)
 	}
 
 	err = db.Where("id = ?", ParsedUUID).Find(&note).Error
+	if err != nil {
+		log.Error(err.Error())
+	}
+
 	user, status := GetUser(user_uuid)
 	if !status {
-		log.Error(err.Error())
+		log.Error("bad status")
 		return note, false
 	}
 	note.User = user
-	err = SQLiteDBClose(db)
-	if err != nil {
+
+	if err = SQLiteDBClose(db); err != nil {
 		log.Error(err.Error())
 		return note, false
 	}

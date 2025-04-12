@@ -81,11 +81,9 @@ func main() {
 			// _ - your data
 			user_id := c.Query("user_id")
 
-			notes, status1 := database.GetToDoNotes(user_id)
-			user, status2 := database.GetUser(user_id)
-			if status1 && status2 {
+			notes, status := database.GetToDoNotes(user_id)
+			if status {
 				for _, note := range notes {
-					note.User = user
 					c.JSON(http.StatusAccepted, note)
 				}
 			} else {
