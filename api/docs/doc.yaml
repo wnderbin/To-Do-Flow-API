@@ -18,6 +18,8 @@ urls:
   /get_user:
     get:
       path: /get_user?user_id=X
+      options:
+        user_id: Идентификатор пользователя.
       summary: Получение пользователя по его идентификатору.
       responses:
         '202':
@@ -29,6 +31,9 @@ urls:
   /get_note:
     get:
       path: /get_note?note_id=X&user_id=X
+      options:
+        note_id: Идентификатор заметки.
+        user_id: Идентификатор пользователя.
       summary: Получение заметки, привязанной к пользователю по ее идентификатору.
       responses:
         '202':
@@ -40,6 +45,8 @@ urls:
   /get_notes:
     get:
       path: /get_notes?user_id=X
+      options:
+        user_id: Идентификатор пользователя.
       summary: Получение всех заметок, привязанных к пользователю.
       responses:
         '202':
@@ -51,6 +58,11 @@ urls:
   /create_user:
     post:
       path: /create_user?name=X&username=X&password=X&email=X
+      options:
+        name: Имя пользователя.
+        username: Уникальное имя пользователя.
+        password: Пароль.
+        email: Почта.
       summary: Регистрация пользователя. Условие - уникальный username.
       responses:
         '201':
@@ -62,6 +74,9 @@ urls:
   /create_note:
     post:
       path: /create_note?note=X&user_id=X
+      options:
+        note: Заметка.
+        user_id: Идентификатор пользователя.
       summary: Создает заметку, привязанную к пользователю.
       responses:
         '201':
