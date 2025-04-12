@@ -40,23 +40,20 @@ func api_init() *config.Config {
 }
 
 func main() {
-	if len(os.Args) == 2 && os.Args[1] == "1" {
+	if len(os.Args) == 2 && os.Args[1] == "1" { //
 		api_init()
 	} else {
 		conf := api_init()
 
 		router := gin.Default()
 
-		/*
-			    ------------
-				| GET-URLS |
-				------------
-		*/
-
+		// get-urls
 		router.GET("/main", func(c *gin.Context) {
-			c.String(http.StatusOK, "Welcome to main page")
+			c.String(http.StatusOK, "Welcome to main page!\nYou can find the API documentation in text form in the api/docs directory.")
 		})
-		router.GET("/create_user", func(c *gin.Context) {
+
+		// post-urls
+		router.POST("/create_user", func(c *gin.Context) {
 			// /create_user?name=_&username=_&password=_&email=_
 			// _ - your data
 			name := c.Query("name")
@@ -71,7 +68,7 @@ func main() {
 				c.String(http.StatusInternalServerError, "Internal Server Error\nMost likely, there is already a user with the specified username, try changing it")
 			}
 		})
-		router.GET("/create_note", func(c *gin.Context) {
+		router.POST("/create_note", func(c *gin.Context) {
 			// /create_note?note=_&user_id=_
 			// _ - your data
 

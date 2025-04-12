@@ -97,15 +97,17 @@ func CreateToDo(ToDo_Note string, User_id string) (models.ToDoList, bool) {
 		return note, false
 	}
 
+	note_uuid := uuid.NewString()
+
 	db.Create(&models.ToDoList{
-		Id:         uuid.NewString(),
+		Id:         note_uuid,
 		Created_at: time.Now(),
 		Updated_at: time.Now(),
 		Todonote:   ToDo_Note,
 		User_id:    User_id,
 	})
 
-	note, status := GetToDoNote(User_id)
+	note, status := GetToDoNote(note_uuid, User_id)
 	if !status {
 		log.Error(err.Error())
 		return note, false
@@ -170,7 +172,7 @@ func GetToDoNotes(user_uuid_str string) ([]models.ToDoList, bool) {
 	return notes, false
 }
 
-func GetToDoNote(note_uuid_str string) (models.ToDoList, bool) {
+func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool) {
 	var note models.ToDoList
 
 	ParsedUUID, err := uuid.Parse(note_uuid_str)
@@ -185,7 +187,13 @@ func GetToDoNote(note_uuid_str string) (models.ToDoList, bool) {
 		return note, false
 	}
 
-	err = db.Where("user_id = ?", ParsedUUID).Error
+	err = db.Where("id = ?", ParsedUUID).Find(&note).Error
+	user, status := GetUser(user_uuid)
+	if !status {
+		log.Error(err.Error())
+		return note, false
+	}
+	note.User = user
 	SQLiteDBClose(db)
 	if err != nil {
 		log.Error(err.Error())

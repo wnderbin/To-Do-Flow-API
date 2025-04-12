@@ -1,0 +1,96 @@
+----------------------------------------------
+# ToDoFlow-API Documentation
+# API-Version: 1.7
+# Base-URL: http://localhost:8080
+
+----------------------------------------------
+
+!!! In order to send the requests you need, you can use Postman !!!
+
+----------------------------------------------
+
+### --- GET ENDPOINTS ---
+
+### Main
+- **Endpoint:** GET /main
+- **Description:** Главная страница с документацией для пользователей
+- **Request-Body:**
+  - **Content-type:** text/plain
+  - **Body:**
+    ```
+    Welcome to main page!
+    You can find the API documentation in text form in the api/docs directory.
+    ```
+- **Response:**
+  - **200 OK**
+- **Possible-Errors:**
+  - **Internal Server Error (500)** - Ошибка на стороне сервера
+
+
+----------------------------------------------
+
+### --- POST ENDPOINTS ---
+
+
+### Create user
+- **Endpoint:** POST /create_user
+- **Description:** Добавляет нового пользователя. Условия: уникальный username. 
+- **Request-Body**
+  - **Path-options:**
+    - **Example:** /create_user?name=_&username=_&password=_&email=_
+    - name - Имя пользователя
+    - username - Уникальное имя пользователя
+    - password - Пароль
+    - email - Почта
+  - **Content-Type:** application/json
+  - **Body:**
+    ```json
+      {
+        "id": "031db8ff-f935-478f-889d-95c348b6e6e9",
+        "name": "user",
+        "username": "just_user",
+        "password": "123",
+        "email": "user@mail",
+        "created_at": "2025-04-12T15:32:33.858749087+09:00",
+        "updated_at": "2025-04-12T15:32:33.858749197+09:00"
+      }
+    ```
+- **Response:**
+  - **201 CREATED** 
+- **Possible-Errors:**
+  - **Internal Server Error (500)** - Ошибка на стороне сервера. Также может возникнуть из-за наличия пользователя с таким же username в базе данных.
+
+### Create todo-note
+- **Endpoint:** POST /create_note
+- **Description:** Создает новою заметку todo. 
+- **Request-Body:**
+  - **Path-options:**
+    - **Example:** /create_note?note=_&user_id=_
+    - note - Заметка todo
+    - user_id - Уникальный id пользователя. Можно получить при регистрации пользователся POST /create_user.
+  - Content-Type: application/json
+  - Body:
+    ```json
+      {
+        "id": "5269fedd-faa9-4dcd-8640-e54f5749f8fb",
+        "created_at": "2025-04-12T15:34:35.060590111+09:00",
+        "updated_at": "2025-04-12T15:34:35.060590194+09:00",
+        "todo": "to-do list: clean up, go to the store",
+        "user_id": "031db8ff-f935-478f-889d-95c348b6e6e9",
+        "user": {
+            "id": "031db8ff-f935-478f-889d-95c348b6e6e9",
+            "name": "user",
+            "username": "just_user",
+            "password": "123",
+            "email": "user@mail",
+            "created_at": "2025-04-12T15:32:33.858749087+09:00",
+            "updated_at": "2025-04-12T15:32:33.858749197+09:00"
+        }
+      }
+    ```
+- **Response:**
+  - **201 Created**
+- **Possible-Errros:**
+  - **Internal Server Error (500)** - Ошибка на стороне сервера. 
+
+----------------------------------------------
