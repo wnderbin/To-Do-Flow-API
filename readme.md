@@ -12,6 +12,7 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
+        <li><a href="#api-documentation">API documentations</a></li>
         <li><a href="#dependencies">Dependencies</a></li>
         <li><a href="#installation-and-launch">Installation & Launch</a></li>
       </ul>
@@ -38,6 +39,10 @@ Manage your todo lists quickly and efficiently right on the server
 ## Getting Started
 
 Instructions on how to run a project locally
+
+### API documentation
+
+You can see the documentation in the directory ![api/docs](https://github.com/wnderbin/To-Do-Flow-API/blob/main/api/docs/doc.txt)
 
 ### Dependencies
 
