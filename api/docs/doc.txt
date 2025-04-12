@@ -49,7 +49,84 @@
   - **202 ACCEPTED** 
 - **Possible-Errors:**
   - **Internal Server Error (500)** - Ошибка на стороне сервера. Может возникнуть, если пользователь укажет несуществующий идентификатор.
+
+### Get note
+- **Endpoint:** GET /get_notes
+- **Description:** Получение конкретной заметки пользователя
+  - **Path-options:**
+    - **Example:** /get_note?note_id=_&user_id=_
+    - note_id - идентификатор заметки
+    - user_id - идентификатор пользователя
+- **Content-Type:** application/json
+- **Body:**
+  ```json
+    {
+      "id": "f3de6c09-b7dd-4272-93ee-a512e122f769",
+      "created_at": "2025-04-12T17:28:04.848178035+09:00",
+      "updated_at": "2025-04-12T17:28:04.848178118+09:00",
+      "todo": "1",
+      "user_id": "05158735-3d1f-46b5-be55-0fde71a0d7ad",
+      "user": {
+          "id": "05158735-3d1f-46b5-be55-0fde71a0d7ad",
+          "name": "user",
+          "username": "11111",
+          "password": "123",
+          "email": "@mail",
+          "created_at": "2025-04-12T17:27:40.068494134+09:00",
+          "updated_at": "2025-04-12T17:27:40.068494222+09:00"
+      }
+    }
+  ```
+- **Response:**
+  - **202 ACCEPTED** 
+- **Possible-Errors:**
+  - **Internal Server Error (500)** - Ошибка на стороне сервера. Может возникнуть, если пользователь укажет несуществующий идентификатор.
     
+### Get notes
+- **Endpoint:** GET /get_notes
+- **Description:** Получение всех заметок пользователя
+  - **Path-options:**
+    - **Example:** /get_notes?user_id=_
+    - user_id - Идентификатор пользователя. Можно получить при регистрации /create_user
+  - **Content-Type:** application/json
+  - **Body:**
+    ```json
+      {
+        "id": "f3de6c09-b7dd-4272-93ee-a512e122f769",
+        "created_at": "2025-04-12T17:28:04.848178035+09:00",
+        "updated_at": "2025-04-12T17:28:04.848178118+09:00",
+        "todo": "1",
+        "user_id": "05158735-3d1f-46b5-be55-0fde71a0d7ad",
+        "user": {
+            "id": "05158735-3d1f-46b5-be55-0fde71a0d7ad",
+            "name": "user",
+            "username": "11111",
+            "password": "123",
+            "email": "@mail",
+            "created_at": "2025-04-12T17:27:40.068494134+09:00",
+            "updated_at": "2025-04-12T17:27:40.068494222+09:00"
+          }
+      }{
+        "id": "0ae69d90-9b53-407e-9aab-ef39bd3b10a4",
+        "created_at": "2025-04-12T17:28:16.167209235+09:00",
+        "updated_at": "2025-04-12T17:28:16.16720932+09:00",
+        "todo": "2",
+        "user_id": "05158735-3d1f-46b5-be55-0fde71a0d7ad",
+        "user": {
+            "id": "05158735-3d1f-46b5-be55-0fde71a0d7ad",
+            "name": "user",
+            "username": "11111",
+            "password": "123",
+            "email": "@mail",
+            "created_at": "2025-04-12T17:27:40.068494134+09:00",
+            "updated_at": "2025-04-12T17:27:40.068494222+09:00"
+          }
+      }
+    ```
+- **Response:**
+  - **202 ACCEPTED** 
+- **Possible-Errors:**
+  - **Internal Server Error (500)** - Ошибка на стороне сервера. Может возникнуть, если пользователь укажет несуществующий идентификатор.
 
 
 ----------------------------------------------

@@ -63,6 +63,35 @@ func main() {
 				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a non-existent id")
 			}
 		})
+		router.GET("/get_note", func(c *gin.Context) {
+			// /get_note?note_id=_&user_id=_
+			// _ - your data
+			note_id := c.Query("note_id")
+			user_id := c.Query("user_id")
+
+			note, status := database.GetToDoNote(note_id, user_id)
+			if status {
+				c.JSON(http.StatusAccepted, note)
+			} else {
+				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a non-existent id")
+			}
+		})
+		router.GET("/get_notes", func(c *gin.Context) {
+			// /get_notes?user_id=_
+			// _ - your data
+			user_id := c.Query("user_id")
+
+			notes, status1 := database.GetToDoNotes(user_id)
+			user, status2 := database.GetUser(user_id)
+			if status1 && status2 {
+				for _, note := range notes {
+					note.User = user
+					c.JSON(http.StatusAccepted, note)
+				}
+			} else {
+				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a non-existent id")
+			}
+		})
 
 		// post-urls
 		router.POST("/create_user", func(c *gin.Context) {

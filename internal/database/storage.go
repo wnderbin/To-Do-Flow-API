@@ -138,7 +138,11 @@ func GetUser(uuid_str string) (models.User, bool) {
 	}
 
 	err = db.Where("id = ?", ParsedUUID).First(&user).Error
-	SQLiteDBClose(db)
+	if err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+	err = SQLiteDBClose(db)
 	if err != nil {
 		log.Error(err.Error())
 		return user, false
@@ -147,10 +151,10 @@ func GetUser(uuid_str string) (models.User, bool) {
 	return user, true
 }
 
-func GetToDoNotes(user_uuid_str string) ([]models.ToDoList, bool) {
+func GetToDoNotes(user_uuid string) ([]models.ToDoList, bool) {
 	var notes []models.ToDoList
 
-	ParsedUUID, err := uuid.Parse(user_uuid_str)
+	ParsedUUID, err := uuid.Parse(user_uuid)
 	if err != nil {
 		log.Error(err.Error())
 		return notes, false
@@ -163,13 +167,23 @@ func GetToDoNotes(user_uuid_str string) ([]models.ToDoList, bool) {
 	}
 
 	err = db.Where("user_id = ?", ParsedUUID).Find(&notes).Error
-	SQLiteDBClose(db)
 	if err != nil {
 		log.Error(err.Error())
 		return notes, false
 	}
 
-	return notes, false
+	// user, status := GetUser(user_uuid)
+	err = SQLiteDBClose(db)
+	if err != nil {
+		log.Error(err.Error())
+		return notes, false
+	}
+	/*if !status {
+		log.Error(err.Error())
+		return notes, false
+	}*/
+
+	return notes, true
 }
 
 func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool) {
@@ -194,7 +208,7 @@ func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool)
 		return note, false
 	}
 	note.User = user
-	SQLiteDBClose(db)
+	err = SQLiteDBClose(db)
 	if err != nil {
 		log.Error(err.Error())
 		return note, false
