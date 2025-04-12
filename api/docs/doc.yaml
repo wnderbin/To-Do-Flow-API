@@ -51,7 +51,7 @@ urls:
   /create_user:
     post:
       path: /create_user?name=X&username=X&password=X&email=X
-      summary: Регистрация пользователя. Условие - уникальный username
+      summary: Регистрация пользователя. Условие - уникальный username.
       responses:
         '201':
           description: Успешное создание. Ответ.
