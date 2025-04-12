@@ -12,7 +12,7 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#api-documentation">API documentations</a></li>
+        <li><a href="#api-documentation">API documentation</a></li>
         <li><a href="#dependencies">Dependencies</a></li>
         <li><a href="#installation-and-launch">Installation & Launch</a></li>
       </ul>
