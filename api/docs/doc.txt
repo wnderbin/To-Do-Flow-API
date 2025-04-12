@@ -26,6 +26,31 @@
 - **Possible-Errors:**
   - **Internal Server Error (500)** - Ошибка на стороне сервера
 
+### Get user
+- **Endpoint:** GET /get_user
+- **Description:** Получение пользователя по его идентификатору
+  - **Path-options:**
+    - **Example:** /get_user?user_id=_
+    - user_id - Идентификатор пользователя. Можно получить при регистрации /create_user
+  - **Content-Type:** application/json
+  - **Body:**
+    ```json
+      {
+        "id": "8f220c37-5a58-4d71-aa0b-b01b7e6f423c",
+        "name": "user",
+        "username": "user",
+        "password": "123",
+        "email": "user@mail",
+        "created_at": "2025-04-12T16:02:53.416535365+09:00",
+        "updated_at": "2025-04-12T16:02:53.416535447+09:00"
+      }
+    ```
+- **Response:**
+  - **202 ACCEPTED** 
+- **Possible-Errors:**
+  - **Internal Server Error (500)** - Ошибка на стороне сервера. Может возникнуть, если пользователь укажет несуществующий идентификатор.
+    
+
 
 ----------------------------------------------
 

@@ -51,6 +51,18 @@ func main() {
 		router.GET("/main", func(c *gin.Context) {
 			c.String(http.StatusOK, "Welcome to main page!\nYou can find the API documentation in text form in the api/docs directory.")
 		})
+		router.GET("/get_user", func(c *gin.Context) {
+			// /get_user?user_id=_
+			// _ - your data
+			user_id := c.Query("user_id")
+
+			note, status := database.GetUser(user_id)
+			if status {
+				c.JSON(http.StatusAccepted, note)
+			} else {
+				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a non-existent id")
+			}
+		})
 
 		// post-urls
 		router.POST("/create_user", func(c *gin.Context) {
@@ -71,7 +83,6 @@ func main() {
 		router.POST("/create_note", func(c *gin.Context) {
 			// /create_note?note=_&user_id=_
 			// _ - your data
-
 			note := c.Query("note")
 			user_id := c.Query("user_id")
 
