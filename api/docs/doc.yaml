@@ -1,0 +1,72 @@
+info:
+  title: ToDoFlow API
+  description: documentation for api
+  version: 1.8
+
+server: http://localhost:8080
+
+urls:
+  /main:
+    get:
+      path: /main
+      summary: Главная страница, где указан путь до документации API.
+      responses:
+        '200':
+          description: Успешный ответ.
+          content: text/plain
+        'Internal Server Error (500)': Внутренние ошибки сервера.
+  /get_user:
+    get:
+      path: /get_user?user_id=X
+      summary: Получение пользователя по его идентификатору.
+      responses:
+        '202':
+          description: Успешный ответ.
+          content: application/json
+        'Internal Server Error':
+          description: Внутренние ошибки сервера. Может возникнуть, если пользователь укажет несуществующий идентификатор.
+          content: text/plain
+  /get_note:
+    get:
+      path: /get_note?note_id=X&user_id=X
+      summary: Получение заметки, привязанной к пользователю по ее идентификатору.
+      responses:
+        '202':
+          description: Успешный ответ.
+          content: application/json
+        'Internal Server Error':
+          description: Внутренние ошибки сервера. Может возникнуть, если пользователь укажет несуществующий идентификатор.
+          content: text/plain
+  /get_notes:
+    get:
+      path: /get_notes?user_id=X
+      summary: Получение всех заметок, привязанных к пользователю.
+      responses:
+        '202':
+          description: Успешный ответ.
+          content: application/json
+        'Internal Server Error':
+          description: Внутренние ошибки сервера. Может возникнуть, если пользователь укажет несуществующий идентификатор.
+          content: text/plain
+  /create_user:
+    post:
+      path: /create_user?name=X&username=X&password=X&email=X
+      summary: Регистрация пользователя. Условие - уникальный username
+      responses:
+        '201':
+          description: Успешное создание. Ответ.
+          content: application/json
+        'Internal Server Error':
+          description: Внутренние ошибки сервера. Может возникнуть, если пользователь нарушил условие указанное выше.
+          content: text/plain
+  /create_note:
+    post:
+      path: /create_note?note=X&user_id=X
+      summary: Создает заметку, привязанную к пользователю.
+      responses:
+        '201':
+          description: Успешное создание. Ответ.
+          content: application/json
+        'Internal Server Error':
+          description: Внутренние ошибки сервера.
+          content: text/plain
