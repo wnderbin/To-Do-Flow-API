@@ -42,7 +42,7 @@ Instructions on how to run a project locally
 
 ### API documentation
 
-You can see the documentation in the directory ![api/docs](https://github.com/wnderbin/To-Do-Flow-API/blob/main/api/docs/doc.txt)
+You can see the documentation in the directory ![api/docs](https://github.com/wnderbin/To-Do-Flow-API/tree/main/api/docs)
 
 ### Dependencies
 
