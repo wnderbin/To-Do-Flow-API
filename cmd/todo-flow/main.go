@@ -56,11 +56,24 @@ func main() {
 			// _ - your data
 			user_id := c.Query("user_id")
 
-			note, status := database.GetUser(user_id)
+			user, status := database.GetUser(user_id)
 			if status {
-				c.JSON(http.StatusAccepted, note)
+				c.JSON(http.StatusAccepted, user)
 			} else {
 				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a non-existent id")
+			}
+		})
+		router.GET("/get_user_by_username", func(c *gin.Context) {
+			// /get_user_by_username?username=_&password=X
+			// _ - your data
+			username := c.Query("username")
+			password := c.Query("password")
+
+			user, status := database.GetUserByUsername(username, password)
+			if status {
+				c.JSON(http.StatusAccepted, user)
+			} else {
+				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a non-existent user")
 			}
 		})
 		router.GET("/get_note", func(c *gin.Context) {
@@ -118,6 +131,39 @@ func main() {
 				c.JSON(http.StatusCreated, note_obj)
 			} else {
 				c.String(http.StatusInternalServerError, "Internal Server Error")
+			}
+		})
+
+		// put-urls
+		router.PUT("/update_user", func(c *gin.Context) {
+			// /update_user?uuid=_&name=_&username=_&password=_&email=_
+			// _ - your data
+			uuid := c.Query("uuid")
+			name := c.Query("name")
+			username := c.Query("username")
+			password := c.Query("password")
+			email := c.Query("email")
+
+			user, status := database.UpdateUser(uuid, name, username, password, email)
+			if status {
+				c.JSON(http.StatusAccepted, user)
+			} else {
+				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a user ID and password that does not exist")
+			}
+		})
+
+		// patch-urls
+		router.PATCH("/update_user_password", func(c *gin.Context) {
+			// /update_user_password?uuid=_&password=_
+			// _ - your data
+			uuid := c.Query("uuid")
+			password := c.Query("password")
+
+			user, status := database.UpdateUserPassword(uuid, password)
+			if status {
+				c.JSON(http.StatusAccepted, user)
+			} else {
+				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a non-existent id")
 			}
 		})
 

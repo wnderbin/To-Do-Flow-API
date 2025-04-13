@@ -47,7 +47,6 @@ func SQLiteDBClose(db *gorm.DB) error {
 // Crud
 
 func CreateUser(name string, username string, password string, email string) (models.User, bool) {
-	//var users []models.User
 	var user models.User
 
 	db, err := SQLiteDBInit(conf)
@@ -55,13 +54,6 @@ func CreateUser(name string, username string, password string, email string) (mo
 		log.Error(err.Error())
 		return user, false
 	}
-
-	/*err = db.Where("username = ?", username).Find(&users).Error
-	if err != nil {
-		log.Error(err.Error())
-	}
-
-	if len(users) == 0 {*/
 
 	user_uuid := uuid.NewString()
 
@@ -127,11 +119,28 @@ func CreateToDo(ToDo_Note string, User_id string) (models.ToDoList, bool) {
 func GetUser(uuid_str string) (models.User, bool) {
 	var user models.User
 
-	ParsedUUID, err := uuid.Parse(uuid_str)
+	db, err := SQLiteDBInit(conf)
 	if err != nil {
 		log.Error(err.Error())
 		return user, false
 	}
+
+	err = db.Where("id = ?", uuid_str).First(&user).Error
+	if err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+
+	if err = SQLiteDBClose(db); err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+
+	return user, true
+}
+
+func GetUserByUsername(username string, password string) (models.User, bool) {
+	var user models.User
 
 	db, err := SQLiteDBInit(conf)
 	if err != nil {
@@ -139,7 +148,7 @@ func GetUser(uuid_str string) (models.User, bool) {
 		return user, false
 	}
 
-	err = db.Where("id = ?", ParsedUUID).First(&user).Error
+	err = db.Where("username = ? AND password = ?", username, password).First(&user).Error
 	if err != nil {
 		log.Error(err.Error())
 		return user, false
@@ -195,19 +204,13 @@ func GetToDoNotes(user_uuid string) ([]models.ToDoList, bool) {
 func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool) {
 	var note models.ToDoList
 
-	ParsedUUID, err := uuid.Parse(note_uuid_str)
-	if err != nil {
-		log.Error(err.Error())
-		return note, false
-	}
-
 	db, err := SQLiteDBInit(conf)
 	if err != nil {
 		log.Error(err.Error())
 		return note, false
 	}
 
-	err = db.Where("id = ?", ParsedUUID).Find(&note).Error
+	err = db.Where("id = ?", note_uuid_str).Find(&note).Error
 	if err != nil {
 		log.Error(err.Error())
 	}
@@ -228,5 +231,72 @@ func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool)
 }
 
 // crUd
+
+func UpdateUser(uuid string, name string, username string, password string, email string) (models.User, bool) {
+	var user models.User
+
+	db, err := SQLiteDBInit(conf)
+	if err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+
+	err = db.Where("id = ? AND password = ?", uuid, password).First(&user).Error
+	if err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+
+	user.Name = name
+	user.Username = username
+	user.Password = password
+	user.Email = email
+	user.Updated_at = time.Now()
+
+	err = db.Save(&user).Error
+	if err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+
+	if err = SQLiteDBClose(db); err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+
+	return user, true
+}
+
+func UpdateUserPassword(uuid string, password string) (models.User, bool) {
+	var user models.User
+
+	db, err := SQLiteDBInit(conf)
+	if err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+
+	err = db.Where("id = ?", uuid).First(&user).Error
+	if err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+
+	user.Password = password
+	user.Updated_at = time.Now()
+
+	err = db.Save(&user).Error
+	if err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+
+	if err = SQLiteDBClose(db); err != nil {
+		log.Error(err.Error())
+		return user, false
+	}
+
+	return user, true
+}
 
 // cruD

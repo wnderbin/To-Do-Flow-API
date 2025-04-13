@@ -28,6 +28,20 @@ urls:
         'Internal Server Error':
           description: Внутренние ошибки сервера. Может возникнуть, если пользователь укажет несуществующий идентификатор.
           content: text/plain
+  /get_user_by_username:
+    get:
+      path: /get_user_by_username?username=X&password=X
+      options:
+        username: Уникальное имя пользователя.
+        password: Пароль пользователя.
+      summary: Получение пользователя по его уникальному имени и паролю. Пригодится, если вы забыли его уникальный идентификатор.
+      responses:
+        '202':
+          description: Упешный ответ.
+          content: application/json
+        'Internal Server Error':
+          description: Внутренние ошибки сервера. Может возникнуть, если пользователь указал несущесвующие уникальное имя и пароль.
+          content: text/plain
   /get_note:
     get:
       path: /get_note?note_id=X&user_id=X
@@ -85,3 +99,35 @@ urls:
         'Internal Server Error':
           description: Внутренние ошибки сервера.
           content: text/plain
+  /update_user:
+    put:
+      path: /update_user?uuid=X&name=X&username=X&password=X&email=X
+      options:
+        uuid: Уникальный идентификатор пользователя.
+        name: Имя пользователя.
+        username: Уникальное имя пользователя.
+        password: Пароль пользователя. Указывать пароль надо не новый, на который вы хотите поменять, а текущий. Для изменения пароля существует другой путь.
+        email: Почта.
+      summary: Изменение данных пользователя. uuid и password необходимо указать текущие, остальные данные можете ввести любые, на какие вы хотите их изменить.
+      responses:
+        '202':
+          description: Успешное обновление. Ответ.
+          content: application/json
+        'Internal Server Error':
+          description: Внутренние ошибки сервера. Может возниккнуть, если вы не указали текущие идентификатор и пароль.
+          content: text/plain
+  /update_user_password:
+    patch:
+      path: update_user_password?uuid=X&password=X
+      options:
+        uuid: Уникальный идентификатор пользователя.
+        password: Новый пароль. 
+      summary: Изменение пароля пользователя.
+      responses:
+        '202':
+          description: Успешное обновление. Ответ.
+          content: application/json
+        'Internal Server Error':
+          description: Внутренние ошибки сервера. Может возникнуть, если вы указали несуществующий идентификатор.
+          content: text/plain
+  
