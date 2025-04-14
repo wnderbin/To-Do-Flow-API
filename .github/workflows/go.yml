@@ -21,14 +21,7 @@ jobs:
       with:
         go-version: '1.22.2'
     - name: Intall Dependencies
-      run: |
-        go get github.com/ilyakaznacheev/cleanenv
-        go get github.com/google/uuid
-        go get gorm.io/driver/sqlite
-        go get gorm.io/gorm
-        go get github.com/gin-gonic/gin
-        go get github.com/golang-migrate/migrate/v4
-        go get github.com/golang-migrate/migrate/v4/database/sqlite3
+      run: go mod download
 
     - name: Build
       run: go build -v ./cmd/todo-flow/main.go
