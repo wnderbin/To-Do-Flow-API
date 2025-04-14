@@ -118,7 +118,7 @@ urls:
           content: text/plain
   /update_user_password:
     patch:
-      path: update_user_password?uuid=X&password=X
+      path: /update_user_password?uuid=X&password=X
       options:
         uuid: Уникальный идентификатор пользователя.
         password: Новый пароль. 
@@ -130,4 +130,19 @@ urls:
         'Internal Server Error':
           description: Внутренние ошибки сервера. Может возникнуть, если вы указали несуществующий идентификатор.
           content: text/plain
-  
+  /update_note:
+    put:
+      path: /update_note?note_id=X&user_id=X&note=X
+      options:
+        note_id: Уникальный идентификатор заметки.
+        user_id: Уникальный идентификатор пользователя.
+        note: Новая заметка.
+      summary: Изменение заметки.
+      responses:
+        '202':
+          description: Успешное обновление. Ответ.
+          content: application/json
+        'Internal Server Error':
+          description: Внутренние ошибки сервера. Может возникнть, если вы указали несуществующие идентификаторы.
+          content: text/plain
+

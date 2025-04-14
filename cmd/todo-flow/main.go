@@ -151,6 +151,21 @@ func main() {
 				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a user ID and password that does not exist")
 			}
 		})
+		router.PUT("/update_note", func(c *gin.Context) {
+			// /update_note?note_id=_&user_id=_&note=_
+			// _ - your data
+
+			note_id := c.Query("note_id")
+			user_id := c.Query("user_id")
+			new_note := c.Query("note")
+
+			note, status := database.UpdateUserNote(note_id, user_id, new_note)
+			if status {
+				c.JSON(http.StatusAccepted, note)
+			} else {
+				c.String(http.StatusInternalServerError, "Internal Server Error\nYou probably specified non-existent identifiers")
+			}
+		})
 
 		// patch-urls
 		router.PATCH("/update_user_password", func(c *gin.Context) {

@@ -299,4 +299,36 @@ func UpdateUserPassword(uuid string, password string) (models.User, bool) {
 	return user, true
 }
 
+func UpdateUserNote(note_uuid, user_uuid, new_note string) (models.ToDoList, bool) {
+	var note models.ToDoList
+
+	db, err := SQLiteDBInit(conf)
+	if err != nil {
+		log.Error(err.Error())
+		return note, false
+	}
+
+	note, status := GetToDoNote(note_uuid, user_uuid)
+	if !status {
+		log.Error("bad status")
+		return note, false
+	}
+
+	note.Todonote = new_note
+	note.Updated_at = time.Now()
+
+	err = db.Save(&note).Error
+	if err != nil {
+		log.Error(err.Error())
+		return note, false
+	}
+
+	if err = SQLiteDBClose(db); err != nil {
+		log.Error(err.Error())
+		return note, false
+	}
+
+	return note, true
+}
+
 // cruD
