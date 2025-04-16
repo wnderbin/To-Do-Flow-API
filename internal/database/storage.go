@@ -220,43 +220,62 @@ func GetUserByUsername(username string, password string) (models.User, bool) { /
 	return user, false
 }
 
-func GetToDoNotes(user_uuid string) ([]models.ToDoList, bool) {
+func GetToDoNotes(user_uuid string) ([]models.ToDoList, bool) { // redis works (verified)
 	var notes []models.ToDoList
 
-	ParsedUUID, err := uuid.Parse(user_uuid)
-	if err != nil {
-		log.Error(err.Error())
-		return notes, false
+	cached_notes, err := RDB.Get(context.Background(), user_uuid).Result()
+	if err == redis.Nil {
+		ParsedUUID, err := uuid.Parse(user_uuid)
+		if err != nil {
+			log.Error(err.Error())
+			return notes, false
+		}
+
+		db, err := SQLiteDBInit(conf)
+		if err != nil {
+			log.Error(err.Error())
+			return notes, false
+		}
+
+		err = db.Where("user_id = ?", ParsedUUID).Find(&notes).Error
+		if err != nil {
+			log.Error(err.Error())
+			return notes, false
+		}
+
+		user, status := GetUser(ParsedUUID.String())
+		if !status {
+			log.Error("bad status")
+			return notes, false
+		}
+
+		for i := range notes {
+			notes[i].User = user
+		}
+
+		notesJSON, _ := json.Marshal(notes)
+		err = RDB.Set(context.Background(), user_uuid, notesJSON, 5*time.Minute).Err()
+		if err != nil {
+			log.Error(err.Error())
+			return notes, false
+		}
+
+		if err = SQLiteDBClose(db); err != nil {
+			log.Error(err.Error())
+			return notes, false
+		}
+
+		return notes, true
+	} else if err == nil {
+		if err = json.Unmarshal([]byte(cached_notes), &notes); err == nil {
+			return notes, true
+		} else {
+			log.Error(err.Error())
+			return notes, false
+		}
 	}
 
-	db, err := SQLiteDBInit(conf)
-	if err != nil {
-		log.Error(err.Error())
-		return notes, false
-	}
-
-	err = db.Where("user_id = ?", ParsedUUID).Find(&notes).Error
-	if err != nil {
-		log.Error(err.Error())
-		return notes, false
-	}
-
-	user, status := GetUser(ParsedUUID.String())
-	if !status {
-		log.Error("bad status")
-		return notes, false
-	}
-
-	for i := range notes {
-		notes[i].User = user
-	}
-
-	if err = SQLiteDBClose(db); err != nil {
-		log.Error(err.Error())
-		return notes, false
-	}
-
-	return notes, true
+	return notes, false
 }
 
 func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool) {
