@@ -294,7 +294,6 @@ func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool)
 			return note, false
 		}
 	} else if err == redis.Nil {
-
 		db, err := SQLiteDBInit(conf)
 		if err != nil {
 			log.Error(err.Error())

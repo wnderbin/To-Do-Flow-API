@@ -1,7 +1,7 @@
 info:
   title: ToDoFlow API
   description: documentation for api
-  version: 1.8
+  version: 2.1
 
 server: http://localhost:8080
 
