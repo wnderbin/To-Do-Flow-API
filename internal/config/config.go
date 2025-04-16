@@ -24,11 +24,18 @@ type HttpServerConfig struct {
 	Idle_Timeout time.Duration `yaml:"idle_timeout"`
 }
 
+type RedisServerConfig struct {
+	Address  string `yaml:"address"`
+	Password string `yaml:"password"`
+	DB       int    `yaml:"db"`
+}
+
 type Config struct {
-	Env         string           `yaml:"env"`
-	SQLite_path string           `yaml:"sqlite_path"`
-	Postgres    PostgresConfig   `yaml:"postgres"`
-	HttpServer  HttpServerConfig `yaml:"http_server"`
+	Env         string            `yaml:"env"`
+	SQLite_path string            `yaml:"sqlite_path"`
+	Postgres    PostgresConfig    `yaml:"postgres"`
+	Redis       RedisServerConfig `yaml:"redis"`
+	HttpServer  HttpServerConfig  `yaml:"http_server"`
 }
 
 func MustLoad() *Config {

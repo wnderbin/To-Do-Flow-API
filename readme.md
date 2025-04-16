@@ -9,6 +9,7 @@
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
+    <li><a href="#project-status">Project status</a></li>
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
@@ -37,6 +38,14 @@ Manage your todo lists quickly and efficiently right on the server
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
 
+## Project status
+Here is information about how the project will work on its different versions. \
+Current version of the project: (+/-)
+* Launch in a container: -
+* Run locally via makefile: +
+* Dependencies (What you should have pre-installed before starting a project): Postgres & Redis
+
+
 ## Getting Started
 
 Instructions on how to run a project locally
@@ -54,6 +63,7 @@ You can see the documentation in the directory ![api/docs](https://github.com/wn
 * **GIN** - github.com/gin-gonic/gin
 * **MIGRATE/V4** - github.com/golang-migrate/migrate/v4
 * **MIGRATE/V4/SQLITE3** - github.com/golang-migrate/migrate/v4/database/sqlite3
+* **GO-REDIS** - github.com/redis/go-redis/v9
 
 
 ```
@@ -64,6 +74,7 @@ go get gorm.io/gorm
 go get github.com/gin-gonic/gin
 go get github.com/golang-migrate/migrate/v4
 go get github.com/golang-migrate/migrate/v4/database/sqlite3
+go get github.com/redis/go-redis/v9
 ```
 
 ### Installation and Launch

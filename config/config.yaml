@@ -1,4 +1,4 @@
-env: "local" #dev, prod
+env: "local" # "local" #dev, prod
 
 sqlite_path: "./storage/sqlite.db"
 
@@ -9,6 +9,11 @@ postgres:
   password: "---"
   dbname: "---"
   sslmode: "disable"
+
+redis:
+  address: "localhost:6379"
+  password: ""
+  db: 0
 
 http_server:
   address: "0.0.0.0:8080"

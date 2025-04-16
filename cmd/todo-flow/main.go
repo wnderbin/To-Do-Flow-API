@@ -44,10 +44,13 @@ func main() {
 		api_init()
 	} else {
 		conf := api_init()
-
 		router := gin.Default()
 
 		// get-urls
+		router.GET("/exit", func(c *gin.Context) {
+			database.CloseConRedis()
+			os.Exit(0)
+		})
 		router.GET("/main", func(c *gin.Context) {
 			c.String(http.StatusOK, "Welcome to main page!\nYou can find the API documentation in text form in the api/docs directory.")
 		})
@@ -177,6 +180,33 @@ func main() {
 			user, status := database.UpdateUserPassword(uuid, password)
 			if status {
 				c.JSON(http.StatusAccepted, user)
+			} else {
+				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a non-existent id")
+			}
+		})
+
+		// delete-urls
+		router.DELETE("/delete_user", func(c *gin.Context) {
+			// /delete_user?user_id=_
+			// _ - your data
+			user_id := c.Query("user_id")
+
+			user, status := database.DeleteUser(user_id)
+			if status {
+				c.JSON(http.StatusAccepted, user)
+			} else {
+				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a non-existent id")
+			}
+		})
+		router.DELETE("/delete_note", func(c *gin.Context) {
+			// /delete_note?note_id=_&user_id_
+			// _ - your data
+			note_id := c.Query("note_id")
+			user_id := c.Query("user_id")
+
+			note, status := database.DeleteNote(note_id, user_id)
+			if status {
+				c.JSON(http.StatusAccepted, note)
 			} else {
 				c.String(http.StatusInternalServerError, "Internal Server Error\nYou may have specified a non-existent id")
 			}

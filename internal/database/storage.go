@@ -1,15 +1,19 @@
 package database
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
 
 	"todoflow-api/internal/config"
 	"todoflow-api/internal/logger"
+	"todoflow-api/internal/redis_db"
 	"todoflow-api/models"
 
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -17,7 +21,13 @@ import (
 var (
 	conf *config.Config = config.MustLoad()
 	log  slog.Logger    = *logger.Init(conf.Env)
+	RDB  *redis.Client  = redis_db.Init(conf)
 )
+
+func CloseConRedis() {
+	RDB.Close()
+	log.Info("Closing connection with Redis...")
+}
 
 // sql
 
@@ -116,26 +126,50 @@ func CreateToDo(ToDo_Note string, User_id string) (models.ToDoList, bool) {
 
 // cRud
 
-func GetUser(uuid_str string) (models.User, bool) {
+func GetUser(uuid_str string) (models.User, bool) { // redis works (verified)
 	var user models.User
 
-	db, err := SQLiteDBInit(conf)
-	if err != nil {
+	cached_user, err := RDB.Get(context.Background(), uuid_str).Result()
+	if err == redis.Nil {
+		db, err := SQLiteDBInit(conf)
+		if err != nil {
+			log.Error(err.Error())
+			return user, false
+		}
+
+		err = db.Where("id = ?", uuid_str).First(&user).Error
+		if err != nil {
+			log.Error(err.Error())
+			return user, false
+		}
+
+		userJSON, err := json.Marshal(user)
+		if err != nil {
+			log.Error(err.Error())
+			return user, false
+		}
+
+		err = RDB.Set(context.Background(), uuid_str, userJSON, 5*time.Minute).Err()
+		if err != nil {
+			log.Error(err.Error())
+			return user, false
+		}
+
+		if err = SQLiteDBClose(db); err != nil {
+			log.Error(err.Error())
+			return user, false
+		}
+
+		return user, true
+	} else if err != nil {
 		log.Error(err.Error())
 		return user, false
 	}
 
-	err = db.Where("id = ?", uuid_str).First(&user).Error
-	if err != nil {
+	if err = json.Unmarshal([]byte(cached_user), &user); err != nil {
 		log.Error(err.Error())
 		return user, false
 	}
-
-	if err = SQLiteDBClose(db); err != nil {
-		log.Error(err.Error())
-		return user, false
-	}
-
 	return user, true
 }
 
@@ -332,3 +366,62 @@ func UpdateUserNote(note_uuid, user_uuid, new_note string) (models.ToDoList, boo
 }
 
 // cruD
+
+func DeleteUser(user_id string) (models.User, bool) {
+	var user models.User
+	var return_user models.User
+
+	db, err := SQLiteDBInit(conf)
+	if err != nil {
+		log.Error(err.Error())
+		return return_user, false
+	}
+
+	err = db.Where("id = ?", user_id).Find(&return_user).Error
+	if err != nil {
+		log.Error(err.Error())
+		return return_user, false
+	}
+	err = db.Where("id = ?", user_id).Delete(&user).Error
+	if err != nil {
+		log.Error(err.Error())
+		return return_user, false
+	}
+
+	if err = SQLiteDBClose(db); err != nil {
+		log.Error(err.Error())
+		return return_user, false
+	}
+
+	return return_user, true
+}
+
+func DeleteNote(note_id string, user_id string) (models.ToDoList, bool) {
+	var note models.ToDoList
+	var return_note models.ToDoList
+
+	db, err := SQLiteDBInit(conf)
+	if err != nil {
+		log.Error(err.Error())
+		return return_note, false
+	}
+
+	return_note, status := GetToDoNote(note_id, user_id)
+	if !status {
+		log.Error("bad status")
+		return return_note, false
+	}
+
+	err = db.Where("id = ?", note_id).Delete(&note).Error
+	if err != nil {
+		log.Error(err.Error())
+		return return_note, false
+	}
+
+	if err = SQLiteDBClose(db); err != nil {
+		log.Error(err.Error())
+		return return_note, false
+	}
+
+	return return_note, true
+}

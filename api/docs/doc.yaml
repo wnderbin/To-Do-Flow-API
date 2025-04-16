@@ -6,6 +6,13 @@ info:
 server: http://localhost:8080
 
 urls:
+  /exit:
+    get:
+      path: exit:
+      summary: Выход из программы. Очищает весь кеш из Redis и разрывает с ним соединение.
+      resonses:
+        '200 || Not Found':
+          description: Успешный выход.
   /main:
     get:
       path: /main
@@ -145,4 +152,32 @@ urls:
         'Internal Server Error':
           description: Внутренние ошибки сервера. Может возникнть, если вы указали несуществующие идентификаторы.
           content: text/plain
+  /delete_user:
+    delete:
+      path: /delete_user?user_id=X
+      options:
+        user_id: Идентификатор пользователя.
+      summary: Удаляет пользователя и его данные пользователю
+      responses:
+        '202':
+          description: Успешное удаление. Ответ.
+          content: application/json
+        'Internal Server Error':
+          description: Внутренние ошибки сервера. Может возникнуть, если вы указали несуществующий идентификатор.
+          content: text/plain
+  /delete_note:
+    delete:
+      path: /delete_note?note_id=X&user_id=X
+      options:
+        note_id: Идентификатор заметки.
+        user_id: Идентификатор пользователя.
+      summary: Удаляет заметку и возвращает ее данные.
+      responses:
+        '202':
+          description: Успешное удаление. Ответ.
+          content: application/json
+        'Internal Server Error':
+          description: Внутренние ошибки сервера. Может возникнуть, если вы указали несуществующий идентификатор.
+          content: text/plain
+
 
