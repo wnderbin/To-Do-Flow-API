@@ -173,27 +173,51 @@ func GetUser(uuid_str string) (models.User, bool) { // redis works (verified)
 	return user, true
 }
 
-func GetUserByUsername(username string, password string) (models.User, bool) {
+func GetUserByUsername(username string, password string) (models.User, bool) { // redis works (verified)
 	var user models.User
 
-	db, err := SQLiteDBInit(conf)
-	if err != nil {
-		log.Error(err.Error())
-		return user, false
-	}
+	cached_user, err := RDB.Get(context.Background(), username).Result()
+	if err == nil {
+		if err = json.Unmarshal([]byte(cached_user), &user); err == nil {
+			if user.Password == password {
+				return user, true
+			} else {
+				return user, false
+			}
+		}
+	} else if err == redis.Nil {
+		db, err := SQLiteDBInit(conf)
+		if err != nil {
+			log.Error(err.Error())
+			return user, false
+		}
 
-	err = db.Where("username = ? AND password = ?", username, password).First(&user).Error
-	if err != nil {
-		log.Error(err.Error())
-		return user, false
-	}
+		err = db.Where("username = ? AND password = ?", username, password).First(&user).Error
+		if err != nil {
+			log.Error(err.Error())
+			return user, false
+		}
 
-	if err = SQLiteDBClose(db); err != nil {
-		log.Error(err.Error())
-		return user, false
-	}
+		userJSON, err := json.Marshal(user)
+		if err != nil {
+			log.Error(err.Error())
+			return user, false
+		}
 
-	return user, true
+		err = RDB.Set(context.Background(), username, userJSON, 5*time.Minute).Err()
+		if err != nil {
+			log.Error(err.Error())
+			return user, false
+		}
+
+		if err = SQLiteDBClose(db); err != nil {
+			log.Error(err.Error())
+			return user, false
+		}
+
+		return user, true
+	}
+	return user, false
 }
 
 func GetToDoNotes(user_uuid string) ([]models.ToDoList, bool) {

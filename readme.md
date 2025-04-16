@@ -42,6 +42,7 @@ Manage your todo lists quickly and efficiently right on the server
 Here is information about how the project will work on its different versions. \
 Current version of the project: (+/-)
 * Launch in a container: -
+* launch workflows: -
 * Run locally via makefile: +
 * Dependencies (What you should have pre-installed before starting a project): Postgres & Redis
 
