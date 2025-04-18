@@ -54,6 +54,9 @@ func openPostgres() *gorm.DB {
 }
 
 func PostgresDBInit(conf *config.Config) (*gorm.DB, error) {
+	if conf.Postgres.Status == 1 {
+		return nil, nil
+	}
 	dsn := conf.Postgres.GetDSN()
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

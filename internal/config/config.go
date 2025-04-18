@@ -16,6 +16,7 @@ type PostgresConfig struct {
 	Password string `yaml:"password"`
 	DBName   string `yaml:"dbname"`
 	SSL_Mode string `yaml:"sslmode"`
+	Status   int    `yaml:"workflow_status"`
 }
 
 type HttpServerConfig struct {
