@@ -5,9 +5,9 @@ sqlite_path: "./storage/sqlite.db"
 postgres:
   host: "localhost"
   port: 5432
-  user: "postgres"
-  password: "---"
-  dbname: "---"
+  user: "wnd"
+  password: "123"
+  dbname: "wnd"
   sslmode: "disable"
 
 redis:

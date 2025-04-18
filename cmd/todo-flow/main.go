@@ -22,16 +22,9 @@ func api_init() *config.Config {
 	log.Info("Initializing server", slog.String("Address", conf.HttpServer.Address))
 	log.Debug("Logger debug mode enabled")
 
-	db, err := database.SQLiteDBInit(conf)
-	if err != nil {
-		log.Error("filed to connect to database:", "error", err)
-		os.Exit(1)
-	}
-	log.Info("connected to database")
+	sqldb, _ := database.Postgres_db.DB()
 
-	sqldb, _ := db.DB()
-
-	if err := migrator.ApplySQLiteMigrations(sqldb); err != nil {
+	if err := migrator.ApplyPostgresMigrations(sqldb); err != nil {
 		log.Error("migrations failed", "error", err)
 		os.Exit(1)
 	}
@@ -49,6 +42,7 @@ func main() {
 		// get-urls
 		router.GET("/exit", func(c *gin.Context) {
 			database.CloseConRedis()
+			database.ClosePostgres()
 			os.Exit(0)
 		})
 		router.GET("/main", func(c *gin.Context) {
@@ -59,7 +53,7 @@ func main() {
 			// _ - your data
 			user_id := c.Query("user_id")
 
-			user, status := database.GetUser(user_id)
+			user, status := database.GetUser(c.Request.Context(), user_id)
 			if status {
 				c.JSON(http.StatusAccepted, user)
 			} else {
@@ -72,7 +66,7 @@ func main() {
 			username := c.Query("username")
 			password := c.Query("password")
 
-			user, status := database.GetUserByUsername(username, password)
+			user, status := database.GetUserByUsername(c.Request.Context(), username, password)
 			if status {
 				c.JSON(http.StatusAccepted, user)
 			} else {
@@ -85,7 +79,7 @@ func main() {
 			note_id := c.Query("note_id")
 			user_id := c.Query("user_id")
 
-			note, status := database.GetToDoNote(note_id, user_id)
+			note, status := database.GetToDoNote(c.Request.Context(), note_id, user_id)
 			if status {
 				c.JSON(http.StatusAccepted, note)
 			} else {
@@ -97,7 +91,7 @@ func main() {
 			// _ - your data
 			user_id := c.Query("user_id")
 
-			notes, status := database.GetToDoNotes(user_id)
+			notes, status := database.GetToDoNotes(c.Request.Context(), user_id)
 			if status {
 				for _, note := range notes {
 					c.JSON(http.StatusAccepted, note)

@@ -14,15 +14,19 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var (
-	conf *config.Config = config.MustLoad()
-	log  slog.Logger    = *logger.Init(conf.Env)
-	RDB  *redis.Client  = redis_db.Init(conf)
+	conf        *config.Config = config.MustLoad()
+	log         slog.Logger    = *logger.Init(conf.Env)
+	RDB         *redis.Client  = redis_db.Init(conf)
+	db          *gorm.DB       = openPostgres()
+	Postgres_db                = db
 )
+
+// redis
 
 func CloseConRedis() {
 	RDB.Close()
@@ -31,27 +35,43 @@ func CloseConRedis() {
 
 // sql
 
-func SQLiteDBInit(conf *config.Config) (*gorm.DB, error) {
-	dsn := conf.SQLite_path
-	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
+func ClosePostgres() error {
+	sqldb, err := db.DB()
 	if err != nil {
-		return nil, fmt.Errorf("failed to open sqlite_db: %w", err)
+		return fmt.Errorf("failed to get sql.DB from gorm.DB: %w", err)
 	}
-
-	return db, nil
+	log.Info("Closing connection with Postgres...")
+	return sqldb.Close()
 }
 
-func SQLiteDBClose(db *gorm.DB) error {
-	sqlite_db, err := db.DB()
+func openPostgres() *gorm.DB {
+	db, err := PostgresDBInit(conf)
 	if err != nil {
-		return fmt.Errorf("failed to get sqlite_db: %w", err)
+		log.Error(err.Error())
+		return db
+	}
+	return db
+}
+
+func PostgresDBInit(conf *config.Config) (*gorm.DB, error) {
+	dsn := conf.Postgres.GetDSN()
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
+	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to Postgres: %w", err)
+	}
+	if err := sqlDB.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	if err = sqlite_db.Close(); err != nil {
-		return fmt.Errorf("failed to close sqlite_db: %w", err)
-	}
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(5)
+	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
-	return nil
+	return db, nil
 }
 
 // Crud
@@ -59,15 +79,9 @@ func SQLiteDBClose(db *gorm.DB) error {
 func CreateUser(name string, username string, password string, email string) (models.User, bool) {
 	var user models.User
 
-	db, err := SQLiteDBInit(conf)
-	if err != nil {
-		log.Error(err.Error())
-		return user, false
-	}
-
 	user_uuid := uuid.NewString()
 
-	err = db.Create(&models.User{
+	err := db.Create(&models.User{
 		Id:         user_uuid,
 		Name:       name,
 		Username:   username,
@@ -80,14 +94,9 @@ func CreateUser(name string, username string, password string, email string) (mo
 		return user, false
 	}
 
-	user, status := GetUser(user_uuid)
+	user, status := GetUser(context.Background(), user_uuid)
 	if !status {
 		log.Error("bad status")
-		return user, false
-	}
-
-	if err = SQLiteDBClose(db); err != nil {
-		log.Error(err.Error())
 		return user, false
 	}
 	return user, true
@@ -95,11 +104,6 @@ func CreateUser(name string, username string, password string, email string) (mo
 
 func CreateToDo(ToDo_Note string, User_id string) (models.ToDoList, bool) {
 	var note models.ToDoList
-	db, err := SQLiteDBInit(conf)
-	if err != nil {
-		log.Error(err.Error())
-		return note, false
-	}
 
 	note_uuid := uuid.NewString()
 
@@ -111,14 +115,9 @@ func CreateToDo(ToDo_Note string, User_id string) (models.ToDoList, bool) {
 		User_id:    User_id,
 	})
 
-	note, status := GetToDoNote(note_uuid, User_id)
+	note, status := GetToDoNote(context.Background(), note_uuid, User_id)
 	if !status {
 		log.Error("bad status")
-		return note, false
-	}
-
-	if err = SQLiteDBClose(db); err != nil {
-		log.Error(err.Error())
 		return note, false
 	}
 	return note, true
@@ -126,16 +125,19 @@ func CreateToDo(ToDo_Note string, User_id string) (models.ToDoList, bool) {
 
 // cRud
 
-func GetUser(uuid_str string) (models.User, bool) { // redis works (verified)
+func GetUser(ctx context.Context, uuid_str string) (models.User, bool) { // redis works (verified)
 	var user models.User
 
-	cached_user, err := RDB.Get(context.Background(), uuid_str).Result()
-	if err == redis.Nil {
-		db, err := SQLiteDBInit(conf)
-		if err != nil {
+	cached_user, err := RDB.Get(ctx, uuid_str).Result()
+	log.Info(cached_user)
+	if err == nil {
+		if err = json.Unmarshal([]byte(cached_user), &user); err == nil {
+			return user, true
+		} else {
 			log.Error(err.Error())
 			return user, false
 		}
+	} else if err == redis.Nil {
 
 		err = db.Where("id = ?", uuid_str).First(&user).Error
 		if err != nil {
@@ -149,34 +151,21 @@ func GetUser(uuid_str string) (models.User, bool) { // redis works (verified)
 			return user, false
 		}
 
-		err = RDB.Set(context.Background(), uuid_str, userJSON, 5*time.Minute).Err()
+		err = RDB.Set(ctx, uuid_str, userJSON, 5*time.Minute).Err()
 		if err != nil {
 			log.Error(err.Error())
 			return user, false
 		}
 
-		if err = SQLiteDBClose(db); err != nil {
-			log.Error(err.Error())
-			return user, false
-		}
-
 		return user, true
-	} else if err != nil {
-		log.Error(err.Error())
-		return user, false
 	}
-
-	if err = json.Unmarshal([]byte(cached_user), &user); err != nil {
-		log.Error(err.Error())
-		return user, false
-	}
-	return user, true
+	return user, false
 }
 
-func GetUserByUsername(username string, password string) (models.User, bool) { // redis works (verified)
+func GetUserByUsername(ctx context.Context, username string, password string) (models.User, bool) { // redis works (verified)
 	var user models.User
 
-	cached_user, err := RDB.Get(context.Background(), username).Result()
+	cached_user, err := RDB.Get(ctx, username).Result()
 	if err == nil {
 		if err = json.Unmarshal([]byte(cached_user), &user); err == nil {
 			if user.Password == password {
@@ -186,11 +175,6 @@ func GetUserByUsername(username string, password string) (models.User, bool) { /
 			}
 		}
 	} else if err == redis.Nil {
-		db, err := SQLiteDBInit(conf)
-		if err != nil {
-			log.Error(err.Error())
-			return user, false
-		}
 
 		err = db.Where("username = ? AND password = ?", username, password).First(&user).Error
 		if err != nil {
@@ -204,13 +188,8 @@ func GetUserByUsername(username string, password string) (models.User, bool) { /
 			return user, false
 		}
 
-		err = RDB.Set(context.Background(), username, userJSON, 5*time.Minute).Err()
+		err = RDB.Set(ctx, username, userJSON, 5*time.Minute).Err()
 		if err != nil {
-			log.Error(err.Error())
-			return user, false
-		}
-
-		if err = SQLiteDBClose(db); err != nil {
 			log.Error(err.Error())
 			return user, false
 		}
@@ -220,30 +199,26 @@ func GetUserByUsername(username string, password string) (models.User, bool) { /
 	return user, false
 }
 
-func GetToDoNotes(user_uuid string) ([]models.ToDoList, bool) { // redis works (verified)
+func GetToDoNotes(ctx context.Context, user_uuid string) ([]models.ToDoList, bool) { // redis works (verified)
 	var notes []models.ToDoList
 
-	cached_notes, err := RDB.Get(context.Background(), user_uuid).Result()
-	if err == redis.Nil {
-		ParsedUUID, err := uuid.Parse(user_uuid)
+	cached_notes, err := RDB.Get(ctx, user_uuid).Result()
+	if err == nil {
+		if err = json.Unmarshal([]byte(cached_notes), &notes); err == nil {
+			return notes, true
+		} else {
+			log.Error(err.Error())
+			return notes, false
+		}
+	} else if err == redis.Nil {
+
+		err = db.Where("user_id = ?", user_uuid).Find(&notes).Error
 		if err != nil {
 			log.Error(err.Error())
 			return notes, false
 		}
 
-		db, err := SQLiteDBInit(conf)
-		if err != nil {
-			log.Error(err.Error())
-			return notes, false
-		}
-
-		err = db.Where("user_id = ?", ParsedUUID).Find(&notes).Error
-		if err != nil {
-			log.Error(err.Error())
-			return notes, false
-		}
-
-		user, status := GetUser(ParsedUUID.String())
+		user, status := GetUser(context.Background(), user_uuid)
 		if !status {
 			log.Error("bad status")
 			return notes, false
@@ -253,35 +228,27 @@ func GetToDoNotes(user_uuid string) ([]models.ToDoList, bool) { // redis works (
 			notes[i].User = user
 		}
 
-		notesJSON, _ := json.Marshal(notes)
-		err = RDB.Set(context.Background(), user_uuid, notesJSON, 5*time.Minute).Err()
+		notesJSON, err := json.Marshal(notes)
+		if err != nil {
+			log.Error(err.Error())
+			return notes, false
+		}
+		err = RDB.Set(ctx, user_uuid, notesJSON, 5*time.Minute).Err()
 		if err != nil {
 			log.Error(err.Error())
 			return notes, false
 		}
 
-		if err = SQLiteDBClose(db); err != nil {
-			log.Error(err.Error())
-			return notes, false
-		}
-
 		return notes, true
-	} else if err == nil {
-		if err = json.Unmarshal([]byte(cached_notes), &notes); err == nil {
-			return notes, true
-		} else {
-			log.Error(err.Error())
-			return notes, false
-		}
 	}
 
 	return notes, false
 }
 
-func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool) { // redis works (verified)
+func GetToDoNote(ctx context.Context, note_uuid_str string, user_uuid string) (models.ToDoList, bool) { // redis works (verified)
 	var note models.ToDoList
 
-	cached_note, err := RDB.Get(context.Background(), note_uuid_str).Result()
+	cached_note, err := RDB.Get(ctx, note_uuid_str).Result()
 	if err == nil {
 		if err = json.Unmarshal([]byte(cached_note), &note); err == nil {
 			if note.User_id == user_uuid {
@@ -294,18 +261,13 @@ func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool)
 			return note, false
 		}
 	} else if err == redis.Nil {
-		db, err := SQLiteDBInit(conf)
-		if err != nil {
-			log.Error(err.Error())
-			return note, false
-		}
 
 		err = db.Where("id = ?", note_uuid_str).Find(&note).Error
 		if err != nil {
 			log.Error(err.Error())
 		}
 
-		user, status := GetUser(user_uuid)
+		user, status := GetUser(context.Background(), user_uuid)
 		if !status {
 			log.Error("bad status")
 			return note, false
@@ -313,13 +275,8 @@ func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool)
 		note.User = user
 
 		noteJSON, _ := json.Marshal(note)
-		err = RDB.Set(context.Background(), note_uuid_str, noteJSON, 5*time.Minute).Err()
+		err = RDB.Set(ctx, note_uuid_str, noteJSON, 5*time.Minute).Err()
 		if err != nil {
-			log.Error(err.Error())
-			return note, false
-		}
-
-		if err = SQLiteDBClose(db); err != nil {
 			log.Error(err.Error())
 			return note, false
 		}
@@ -334,13 +291,7 @@ func GetToDoNote(note_uuid_str string, user_uuid string) (models.ToDoList, bool)
 func UpdateUser(uuid string, name string, username string, password string, email string) (models.User, bool) {
 	var user models.User
 
-	db, err := SQLiteDBInit(conf)
-	if err != nil {
-		log.Error(err.Error())
-		return user, false
-	}
-
-	err = db.Where("id = ? AND password = ?", uuid, password).First(&user).Error
+	err := db.Where("id = ? AND password = ?", uuid, password).First(&user).Error
 	if err != nil {
 		log.Error(err.Error())
 		return user, false
@@ -358,24 +309,13 @@ func UpdateUser(uuid string, name string, username string, password string, emai
 		return user, false
 	}
 
-	if err = SQLiteDBClose(db); err != nil {
-		log.Error(err.Error())
-		return user, false
-	}
-
 	return user, true
 }
 
 func UpdateUserPassword(uuid string, password string) (models.User, bool) {
 	var user models.User
 
-	db, err := SQLiteDBInit(conf)
-	if err != nil {
-		log.Error(err.Error())
-		return user, false
-	}
-
-	err = db.Where("id = ?", uuid).First(&user).Error
+	err := db.Where("id = ?", uuid).First(&user).Error
 	if err != nil {
 		log.Error(err.Error())
 		return user, false
@@ -390,24 +330,13 @@ func UpdateUserPassword(uuid string, password string) (models.User, bool) {
 		return user, false
 	}
 
-	if err = SQLiteDBClose(db); err != nil {
-		log.Error(err.Error())
-		return user, false
-	}
-
 	return user, true
 }
 
 func UpdateUserNote(note_uuid, user_uuid, new_note string) (models.ToDoList, bool) {
 	var note models.ToDoList
 
-	db, err := SQLiteDBInit(conf)
-	if err != nil {
-		log.Error(err.Error())
-		return note, false
-	}
-
-	note, status := GetToDoNote(note_uuid, user_uuid)
+	note, status := GetToDoNote(context.Background(), note_uuid, user_uuid)
 	if !status {
 		log.Error("bad status")
 		return note, false
@@ -416,17 +345,11 @@ func UpdateUserNote(note_uuid, user_uuid, new_note string) (models.ToDoList, boo
 	note.Todonote = new_note
 	note.Updated_at = time.Now()
 
-	err = db.Save(&note).Error
+	err := db.Save(&note).Error
 	if err != nil {
 		log.Error(err.Error())
 		return note, false
 	}
-
-	if err = SQLiteDBClose(db); err != nil {
-		log.Error(err.Error())
-		return note, false
-	}
-
 	return note, true
 }
 
@@ -434,26 +357,21 @@ func UpdateUserNote(note_uuid, user_uuid, new_note string) (models.ToDoList, boo
 
 func DeleteUser(user_id string) (models.User, bool) {
 	var user models.User
+	var note models.ToDoList
 	var return_user models.User
 
-	db, err := SQLiteDBInit(conf)
+	err := db.Where("id = ?", user_id).Find(&return_user).Error
 	if err != nil {
 		log.Error(err.Error())
 		return return_user, false
 	}
-
-	err = db.Where("id = ?", user_id).Find(&return_user).Error
+	err = db.Where("user_id = ?", user_id).Delete(&note).Error
 	if err != nil {
 		log.Error(err.Error())
 		return return_user, false
 	}
 	err = db.Where("id = ?", user_id).Delete(&user).Error
 	if err != nil {
-		log.Error(err.Error())
-		return return_user, false
-	}
-
-	if err = SQLiteDBClose(db); err != nil {
 		log.Error(err.Error())
 		return return_user, false
 	}
@@ -465,25 +383,14 @@ func DeleteNote(note_id string, user_id string) (models.ToDoList, bool) {
 	var note models.ToDoList
 	var return_note models.ToDoList
 
-	db, err := SQLiteDBInit(conf)
-	if err != nil {
-		log.Error(err.Error())
-		return return_note, false
-	}
-
-	return_note, status := GetToDoNote(note_id, user_id)
+	return_note, status := GetToDoNote(context.Background(), note_id, user_id)
 	if !status {
 		log.Error("bad status")
 		return return_note, false
 	}
 
-	err = db.Where("id = ?", note_id).Delete(&note).Error
+	err := db.Where("id = ?", note_id).Delete(&note).Error
 	if err != nil {
-		log.Error(err.Error())
-		return return_note, false
-	}
-
-	if err = SQLiteDBClose(db); err != nil {
 		log.Error(err.Error())
 		return return_note, false
 	}
