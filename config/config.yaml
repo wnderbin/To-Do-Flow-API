@@ -14,6 +14,7 @@ redis:
   address: "localhost:6379"
   password: ""
   db: 0
+  workflow_status: 1 # 1 - workflow (tests) status / 0 - launch status
 
 http_server:
   address: "0.0.0.0:8080"

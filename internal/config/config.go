@@ -28,6 +28,7 @@ type RedisServerConfig struct {
 	Address  string `yaml:"address"`
 	Password string `yaml:"password"`
 	DB       int    `yaml:"db"`
+	Status   int    `yaml:"worflow_status"`
 }
 
 type Config struct {

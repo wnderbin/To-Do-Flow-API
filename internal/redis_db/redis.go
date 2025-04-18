@@ -14,6 +14,9 @@ var (
 )
 
 func Init(conf *config.Config) *redis.Client {
+	if conf.Redis.Status == 1 {
+		return RDB
+	}
 	RDB = redis.NewClient(&redis.Options{
 		Addr:     conf.Redis.Address,
 		Password: conf.Redis.Password,
