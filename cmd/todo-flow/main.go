@@ -22,14 +22,18 @@ func api_init() *config.Config {
 	log.Info("Initializing server", slog.String("Address", conf.HttpServer.Address))
 	log.Debug("Logger debug mode enabled")
 
-	sqldb, _ := database.Postgres_db.DB()
+	if conf.Postgres.Status == 0 {
+		sqldb, _ := database.Postgres_db.DB()
 
-	if err := migrator.ApplyPostgresMigrations(sqldb); err != nil {
-		log.Error("migrations failed", "error", err)
-		os.Exit(1)
+		if err := migrator.ApplyPostgresMigrations(sqldb); err != nil {
+			log.Error("migrations failed", "error", err)
+			os.Exit(1)
+		}
+
+		return conf
+	} else {
+		return conf
 	}
-
-	return conf
 }
 
 func main() {
