@@ -1,15 +1,15 @@
 info:
   title: ToDoFlow API
   description: documentation for api
-  version: 2.1
+  api-version: 3.5 (stable | latest)
 
-server: http://localhost:8080
+server: http://0.0.0.0:8080
 
 urls:
   /exit:
     get:
       path: exit:
-      summary: Выход из программы. Очищает весь кеш из Redis и разрывает с ним соединение.
+      summary: Выход из программы. Очищает весь кеш из Redis и разрывает с ним соединение + разрывает соединение с базой данных.
       resonses:
         '200 || Not Found':
           description: Успешный выход.
