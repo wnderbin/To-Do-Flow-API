@@ -3,19 +3,19 @@ env: "local" # "local" #dev, prod
 sqlite_path: "./storage/sqlite.db"
 
 postgres:
-  host: "localhost"
+  host: "postgres"
   port: 5432
   user: "wnd"
   password: "123"
   dbname: "wnd"
   sslmode: "disable"
-  workflow_status: 1 # 1 - workflow (tests) status / 0 - launch status
+  workflow_status: 0 # 1 - workflow (tests) status / 0 - launch status
 
 redis:
-  address: "localhost:6379"
+  address: "redis:6379"
   password: ""
   db: 0
-  workflow_status: 1 # 1 - workflow (tests) status / 0 - launch status
+  workflow_status: 0 # 1 - workflow (tests) status / 0 - launch status
 
 http_server:
   address: "0.0.0.0:8080"

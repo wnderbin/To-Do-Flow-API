@@ -1,0 +1,37 @@
+services:
+  postgres: # service name
+    image: postgres:15 # specify the postgres image
+    restart: "no" # we indicate that the container will not be restarted automatically. if we need an automatic restart, we write always
+    environment: # environment variables
+      POSTGRES_USER: wnd
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: wnd
+    ports: # we specify the port on which postgres will work
+      - "5433:5432" # at the beginning another port is specified because the port we need to work with is busy
+    volumes: # uncomment if you want the data to be saved after the container was stopped
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    restart: "no"
+    ports:
+      - "6380:6379" # at the beginning another port is specified because the port we need to work with is busy
+
+  api:
+    build: . # tells Docker Compose to build the image from the current directory (.) where the Dockerfile is located.
+    depends_on: # specifies dependencies between services. in this case, the API will only start after the PostgreSQL and Redis services are started.
+      - postgres
+      - redis
+    ports: 
+      - "8080:8080"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: wnd
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: wnd
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+volumes: # uncomment if you want the data to be saved after the container was stopped
+  pgdata:
