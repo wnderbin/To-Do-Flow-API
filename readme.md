@@ -15,9 +15,9 @@
       <ul>
         <li><a href="#api-documentation">API documentation</a></li>
         <li><a href="#dependencies">Dependencies</a></li>
+        <li><a href="#installation-and-launch">Installation & Launch</a></li>
         <li><a href="#if-you-are-running-the-application-using-docker-i-recommend-making-sure-that-the-configuration-file-looks-like-this"> Launch with docker-compose</a> </li>
         <li> <a href="#if-you-are-running-the-project-locally"> Launch locally </a> </li>
-        <li><a href="#installation-and-launch">Installation & Launch</a></li>
       </ul>
     </li>
     <li><a href="#project-structure">Project structure</a></li>
